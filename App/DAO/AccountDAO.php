@@ -7,14 +7,11 @@ use Exception;
 
 class AccountDAO extends Connection
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    public function __construct() {}
 
     public function getAccount(int $accountId)
     {
-        $stmt = $this->pdo->prepare('SELECT * FROM account WHERE id = ?');
+        $stmt = self::getPdo()->prepare('SELECT * FROM account WHERE id = ?');
         $stmt->execute([$accountId]); 
         $account = $stmt->fetch();
 
@@ -30,7 +27,7 @@ class AccountDAO extends Connection
 
     public function addNewAccount(\App\Models\AccountModel $account)
     {
-        $statement = $this->pdo
+        $statement = self::getPdo()
             ->prepare('INSERT INTO account VALUES (
                 null,
                 :customer_id,
@@ -49,7 +46,7 @@ class AccountDAO extends Connection
     public function editAccount(\App\Models\AccountModel $account)
     {
         try {
-            $statement = $this->pdo
+            $statement = self::getPdo()
                 ->prepare('
                     UPDATE account SET
                         balance = :balance,

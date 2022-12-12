@@ -13,21 +13,25 @@ final class CustomerController
 {
     public function getCustomers(Request $request, Response $response, array $args): Response
     {
-        // $response->getBody()->write('Customers list');
-
         $customerDAO = new CustomerDAO();
-        $customerDAO->getAllCustomers();
+        if (isset($args['customer_id'])) {
+            $data = $customerDAO->getCustomersById($args['customer_id']);
+        } else {
+            $data = $customerDAO->getAllCustomers();
+        }
+
+        $response->withHeader('Content-Type', 'application/json');
+        $body = $response->getBody();
+
+        $body->write(json_encode($data));
         return $response;
     }
 
     public function addNewCustomer(Request $request, Response $response): Response
     {
         $data = json_decode($request->getBody());
-        // echo '<pre>';
-        // var_dump($data->first_name);
-        // echo '</pre>';
-        // die;
         $newCustomer = new CustomerModel();
+
         try {
             $newCustomer->setFirstName($data->first_name);
             $newCustomer->setLastName($data->last_name);
@@ -44,7 +48,7 @@ final class CustomerController
             $body = $response->getBody();
 
             $body->write(json_encode([
-                'status'  => 200,
+                'status'  => 201,
                 'message' => 'Customer added successfully!'
             ]));
         } catch (Exception $e) {
@@ -52,7 +56,7 @@ final class CustomerController
             $body = $response->getBody();
 
             $body->write(json_encode([
-                'status'  => $response->getStatusCode(),
+                'status'  => 409,
                 'message' => $e->getMessage()
             ]));
         }
@@ -93,10 +97,12 @@ final class CustomerController
         $updatedReturn = $customerDAO->updateCustomer($customer);
         if ($updatedReturn) {
             $body->write(json_encode([
+                'status' => 201,
                 'message' => 'Customer edited successfully!'
             ]));
         } else {
             $body->write(json_encode([
+                'status' => 409,
                 'message' => $updatedReturn
             ]));
         }

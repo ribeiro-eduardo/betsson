@@ -1,29 +1,43 @@
 <?php
 
 namespace App\DAO;
+require __DIR__  . '/../../env.php';
 
 abstract class Connection
 {
     /**
      * @var \PDO
      */
-    protected $pdo;
+    public static $pdo;
 
-    public function __construct()
+    // Singleton Design Pattern
+    private function __construct() {}
+
+    public function __destruct()
     {
-        $host   = getenv('MYSQL_HOST');
-        $dbname = getenv('MYSQL_DBNAME');
-        $user   = getenv('MYSQL_USER');
-        $pass   = getenv('MYSQL_PASSWORD');
-        $port   = getenv('MYSQL_PORT');
+        self::$pdo = null;
+    }
 
-        $dsn = "mysql:host={$host};dbname={$dbname};port={$port}";
-        
-        $this->pdo = new \PDO($dsn, $user, $pass);
-        
-        $this->pdo->setAttribute(
-            \PDO::ATTR_ERRMODE,
-            \PDO::ERRMODE_EXCEPTION
-        );
+    public static function getPdo()
+    {
+        if (!isset(self::$pdo)) {
+            $host   = getenv('MYSQL_HOST');
+            $dbname = getenv('MYSQL_DBNAME');
+            $user   = getenv('MYSQL_USER');
+            $pass   = getenv('MYSQL_PASSWORD');
+            $port   = getenv('MYSQL_PORT');
+    
+            $dsn = "mysql:host={$host};dbname={$dbname};port={$port}";
+            
+            // db static instance receives PDO object
+            self::$pdo = new \PDO($dsn, $user, $pass);
+            
+            self::$pdo->setAttribute(
+                \PDO::ATTR_ERRMODE,
+                \PDO::ERRMODE_EXCEPTION
+            );
+        }
+
+        return self::$pdo;
     }
 }

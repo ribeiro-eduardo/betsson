@@ -6,33 +6,30 @@ use Exception;
 
 class CustomerDAO extends Connection
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    public function __construct() {}
 
+
+    public function getCustomersById(int $id)
+    {
+        $customer = self::getPdo()
+            ->query('SELECT * FROM customer WHERE id = ' . $id)
+            ->fetch(\PDO::FETCH_ASSOC);
+
+            return $customer;
+    }
 
     public function getAllCustomers()
     {
-        $customers = $this->pdo
+        $customers = self::getPdo()
             ->query('SELECT * FROM customer')
             ->fetchAll(\PDO::FETCH_ASSOC);
 
-            echo '<pre>';
-            foreach ($customers as $customer) {
-                var_dump($customer);
-            }
-            echo '</pre>';
-            die;
+        return $customers;
     }
 
     public function addNewCustomer(\App\Models\CustomerModel $customer)
     {
-        // echo '<pre>';
-        // var_dump($customer);
-        // echo '</pre>';
-
-        $statement = $this->pdo
+        $statement = self::getPdo()
             ->prepare('INSERT INTO customer VALUES(
                 null,
                 :first_name,
@@ -49,13 +46,13 @@ class CustomerDAO extends Connection
             'email'      => $customer->getEmail()
         ]);
 
-        return $this->pdo->lastInsertId();
+        return self::getPdo()->lastInsertId();
     }
 
     public function updateCustomer(\App\Models\CustomerModel $customer)
     {
         try {
-            $statement = $this->pdo
+            $statement = self::getPdo()
                 ->prepare('UPDATE customer SET
                         first_name = :first_name,
                         last_name = :last_name,

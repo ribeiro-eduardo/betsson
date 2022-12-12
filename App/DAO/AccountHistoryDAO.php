@@ -6,15 +6,12 @@ use Exception;
 
 class AccountHistoryDAO extends Connection
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
+    public function __construct() {}
 
     public function getAccountHistory(\App\Models\AccountHistoryModel $accountHistory)
     {
         $account_id = $accountHistory->getAccountId();
-        $statement = $this->pdo->prepare('
+        $statement = self::getPdo()->prepare('
             SELECT * 
             FROM account_history 
             WHERE account_id=:account_id
@@ -23,8 +20,6 @@ class AccountHistoryDAO extends Connection
         
         $operation = $accountHistory->getOperation() ?? "'deposit', 'withdrawal'";
         $statement->execute(['account_id' => $account_id, 'operation' => $operation]); 
-
-        // $statement->debugDumpParams();
         
         $data = $statement->fetchAll();
 
@@ -33,7 +28,7 @@ class AccountHistoryDAO extends Connection
 
     public function addNewAccountHistory(\App\Models\AccountHistoryModel $accountHistory)
     {
-        $statement = $this->pdo
+        $statement = self::getPdo()
             ->prepare('INSERT INTO account_history (account_id, operation, amount, date_time) VALUES (
                 :account_id,
                 :operation,
@@ -63,7 +58,6 @@ class AccountHistoryDAO extends Connection
         $sql = "SELECT 
                     DATE(date_time) date, 
                     customer.country,
-                    -- COUNT(DISTINCT customer.id) AS unique_customers,
                     COUNT(account_history.id) AS $aliasCountOperations,
                     SUM(amount) AS $aliasSumAmount
                 FROM account_history 
@@ -75,17 +69,11 @@ class AccountHistoryDAO extends Connection
                 GROUP BY date, country, operation 
                 ORDER BY date";
 
-        $statement = $this->pdo->prepare($sql);
+        $statement = self::getPdo()->prepare($sql);
         $statement->execute();
-
-        //  $statement->debugDumpParams();
 
         $data = $statement->fetch(\PDO::FETCH_ASSOC);
 
-        // echo '<pre>';
-        // var_dump($data);
-        // echo '<pre>';
-        // die;
         return $data;
     }
 
@@ -102,7 +90,7 @@ class AccountHistoryDAO extends Connection
                 GROUP BY DATE(date_time), country 
                 ORDER BY DATE(date_time)";
         
-        $statement = $this->pdo->prepare($sql);
+        $statement = self::getPdo()->prepare($sql);
         $statement->execute();
 
         $data = $statement->fetchAll(\PDO::FETCH_ASSOC);
