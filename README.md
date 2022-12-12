@@ -4,7 +4,6 @@ To run the project, you will need to follow these next steps:
 - Run the SQL Dump attached to the email I sent you.
 - Open the project in your IDE
 - On the command line of the project, run "composer install" to install all the dependencies.
-- Open the project in your IDE
 - Create a new file in the root of the project called 'env.php'
 - Copy the content of the file called 'env.example.php' located in the root as well
 - Paste it on the new file you created (env.php) and set the user, password and port to your MySQL server
