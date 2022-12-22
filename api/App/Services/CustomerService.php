@@ -52,7 +52,14 @@ class CustomerService
         
         $customerDAO = new CustomerDAO();
         
-        return $customerDAO->addNewCustomer($customerModel)->toArray();
+        $addNewCustomerReturn = $customerDAO->addNewCustomer($customerModel);
+        if ($addNewCustomerReturn) {
+            return $addNewCustomerReturn->toArray();
+        }
+        return [
+            'status' => 400,
+            'message' => 'Error adding new customer.'
+        ];
     }
 
     public static function editCustomer(\stdClass $data, int $customerId)
@@ -72,6 +79,13 @@ class CustomerService
             }
         }
         
-        return $customerDAO->updateCustomer($customerModel)->toArray();
+        $editCustomerReturn = $customerDAO->updateCustomer($customerModel);
+        if ($editCustomerReturn) {
+            return $editCustomerReturn->toArray();
+        }
+        return [
+            'status' => 400,
+            'message' => 'Error editing customer.'
+        ];
     }
 }

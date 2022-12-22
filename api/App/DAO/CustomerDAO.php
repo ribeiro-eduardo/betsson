@@ -2,8 +2,7 @@
 
 namespace App\DAO;
 
-use Error;
-
+use PDOException;
 class CustomerDAO extends Connection
 {
     public function __construct() {} 
@@ -61,7 +60,7 @@ class CustomerDAO extends Connection
         
             return $newCustomer;
             
-        } catch (Error $e) {
+        } catch (PDOException $e) {
             $pdo->rollBack();
             return false;
         }
@@ -96,7 +95,7 @@ class CustomerDAO extends Connection
 
             $pdo->commit();
             return $editedCustomer;
-        } catch (Error $e) {
+        } catch (PDOException $e) {
             $pdo->rollBack();
             return false;
         }
