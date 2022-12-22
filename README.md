@@ -1,64 +1,12 @@
 Welcome to Betsson API!
 
 To run the project, you will need to follow these next steps:
-- Run the SQL Dump attached to the email I sent you.
-- Open the project in your IDE
-- On the command line of the project, run "composer install" to install all the dependencies.
-- Create a new file in the root of the project called 'env.php'
-- Copy the content of the file called 'env.example.php' located in the root as well
-- Paste it on the new file you created (env.php) and set the user, password and port to your MySQL server
-- On the command line of the project, run "cd public"
-- Once in public directory, run "php -S localhost:8080"
+- Clone the project into your local machine
+- Run docker-compose -d (both database and application containers will be started)
 
-- The available routes are:
-  - Add new customer: 
-    Method: POST
-    Address: http://localhost:8080/customers
-    Body example: 
-    {
-    	"first_name": "Gabriela",
-    	"last_name": "Ribeiro",
-    	"gender": "female",
-    	"country": "BR",
-	    "email": "gabriela@betsson.com"
-    }
-    
-  - Edit customer details:
-    Method: PUT
-    Address: http://localhost:8080/customers/{customer_id}
-    Body example:
-    {
-      "first_name": "María",
-      "last_name": "Cruzes",
-      "gender": "female",
-      "country": "BR",
-      "email": "maria@betsson.com.br"
-    }
-    
-  - Deposit
-    Method: PUT
-    Address: http://localhost:8080/deposit/{account_id}
-    Body example:
-    {
-      "amount": 100
-    }
-  
-  - Withdrawal
-    Method: PUT
-    Address: http://localhost:8080/withdrawal/{account_id}
-    Body example:
-    {
-      "amount": 200
-    }
-    
-  - Operations report
-    Method: GET
-    Address: http://localhost:8080/operations_report/{interval}
-    PS: parameter interval is optional. If not passed, the API will assume 7 days
-    
- - Extra Endpoint: Customer(s) data
-    Method: GET
-    Address: http://localhost:8080/customers/{customer_id}
-    PS: parameter customer_id is optional. If not passed, the API will return a list of all customers registered.
-    
+- There are a few registers already at the database.
+- I have not addressed the ports of db container to host so that one could open the database at DBeaver or MySql Workbench for example, but if you need to see the content of the database, it's possible to run 'docker exec -it betsson-db bash' and inside bash, run 'mysql -uroot -proot'.
+- One important point is that I left the env.php so that it will be easier to run the application than if you would have to copy a env.example to a new file, etc.
 
+Here goes the link to the API documentation. It is quite simple, but do the work!
+https://documenter.getpostman.com/view/8417668/2s8Z6u5uwj
