@@ -1,4 +1,4 @@
-FROM php:8.1-alpine
+FROM php:8.1-fpm-alpine
 
 ENV TIMEZONE Europe/Malta
 WORKDIR /var/www/html/betsson/
@@ -11,5 +11,6 @@ RUN  apk update; \
      docker-php-ext-install pdo_mysql;  \
      apk add git; 
 
-EXPOSE 8080
+EXPOSE 9000
+CMD ["php-fpm"]
 
