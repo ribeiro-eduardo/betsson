@@ -14,11 +14,9 @@ final class AccountHistoryController
         $interval = $args['interval'] ?? $stdInterval;
         
         $operationsReport = AccountHistoryService::getOperationsReport($interval);
-
-        $response->withHeader('Content-Type', 'application/json');
         $body = $response->getBody();
 
         $body->write(json_encode($operationsReport));
-        return $response;
+        return $response->withHeader('Content-Type', 'application/json');;
     }
 }

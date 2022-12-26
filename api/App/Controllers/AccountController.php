@@ -16,7 +16,6 @@ final class AccountController
 
     public function deposit(Request $request, Response $response, array $args)
     {
-        $response->withHeader('Content-Type', 'application/json');
         $body = $response->getBody();
         
         $data = json_decode($request->getBody());
@@ -40,12 +39,11 @@ final class AccountController
             ]));
         }
 
-        return $response;
+        return $response->withHeader('Content-Type', 'application/json');;
     }
 
     public function withdraw(Request $request, Response $response, array $args)
     {
-        $response->withHeader('Content-Type', 'application/json');
         $body = $response->getBody();
         
         $data = json_decode($request->getBody());
@@ -69,6 +67,6 @@ final class AccountController
                 'message' => 'Missing body.'
             ]));
         }
-        return $response;
+        return $response->withHeader('Content-Type', 'application/json');;
     }    
 }

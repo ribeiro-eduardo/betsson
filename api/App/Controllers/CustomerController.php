@@ -10,7 +10,6 @@ final class CustomerController
 {
     public function getCustomers(Request $request, Response $response, array $args): Response
     {
-        $response->withHeader('Content-Type', 'application/json');
         $body = $response->getBody();
 
         if (isset($args['customer_id'])) {
@@ -20,14 +19,12 @@ final class CustomerController
             $customers = \App\Services\CustomerService::getAllCustomers();
             $body->write(json_encode($customers));
         }
-        return $response;
+        return $response->withHeader('Content-Type', 'application/json');
     }
 
     public function addNewCustomer(Request $request, Response $response): Response
     {
         $data = json_decode($request->getBody());
-
-        $response->withHeader('Content-Type', 'application/json');
         $body = $response->getBody();
 
         if (!is_null($data)) {
@@ -40,13 +37,12 @@ final class CustomerController
                 'message' => 'Missing body'
             ]));
         }
-        return $response;
+        return $response->withHeader('Content-Type', 'application/json');;
     }
 
     public function editCustomer(Request $request, Response $response, array $args): Response
     {
         $data = json_decode($request->getBody());
-        $response->withHeader('Content-Type', 'application/json');
         $body = $response->getBody();
 
         if (!is_null($data)) {
@@ -59,6 +55,6 @@ final class CustomerController
                 'message' => 'Missing body'
             ]));
         }
-        return $response;
+        return $response->withHeader('Content-Type', 'application/json');;
     }
 }
