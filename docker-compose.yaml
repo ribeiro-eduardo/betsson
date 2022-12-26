@@ -26,6 +26,7 @@ services:
       - betsson-network
     ports: 
       - "8080:8080"
+    command: php -S 0.0.0.0:8080 -t public/
 
 networks:
   betsson-network:

@@ -36,6 +36,8 @@ abstract class Connection
                 \PDO::ATTR_ERRMODE,
                 \PDO::ERRMODE_EXCEPTION
             );
+
+            self::$pdo->setAttribute(\PDO::ATTR_AUTOCOMMIT, 0);
         }
 
         return self::$pdo;

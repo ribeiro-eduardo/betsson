@@ -2,7 +2,6 @@
 
 namespace App\DAO;
 
-use Error;
 class AccountDAO extends Connection
 {
     public function __construct() {}
@@ -47,7 +46,7 @@ class AccountDAO extends Connection
         ]);
     }
 
-    public function editAccount(\App\Models\AccountModel $account)
+    public function editAccount(\App\Models\AccountModel $account, \App\Models\AccountHistoryModel $accountHistoryModel)
     {
         $pdo = self::getPdo();
 
@@ -67,9 +66,11 @@ class AccountDAO extends Connection
                 'id'            => $account->getId()
             ]);
 
+            $account->registerOperation($accountHistoryModel);
+
             $pdo->commit();
             return true;
-        } catch (Error $e) {
+        } catch (\PDOException $e) {
             $pdo->rollBack();
             return false;
         }

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\AccountHistoryService;
+
 final class AccountModel
 {
     private $id;
@@ -58,6 +60,11 @@ final class AccountModel
     public function setBonusBalance(float $bonus_balance)
     {
         $this->bonus_balance = $bonus_balance;
+    }
+
+    public function registerOperation(\App\Models\AccountHistoryModel $accountHistoryModel)
+    {   
+        AccountHistoryService::registerOperation($accountHistoryModel);
     }
 
     public function toArray(): array

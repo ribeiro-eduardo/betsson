@@ -2,11 +2,9 @@
 
 namespace App\Services;
 
-use Exception;
-
 class AccountService 
 {
-    public static function getAccountById(int $accountId)
+    public static function getAccountById(int $accountId): \App\Models\AccountModel
     {
         $accountDAO = new \App\DAO\AccountDAO();
         return $accountDAO->getAccountById($accountId);
@@ -32,26 +30,113 @@ class AccountService
         $accountDAO->addNewAccount($newAccount);
     }
 
-    public static function editAccount(\App\Models\AccountModel $account, string $operation, float $amount)
+    public static function registerOperation(\App\Models\AccountModel $accountModel, \App\Models\AccountHistoryModel $accountHistoryModel)
     {
-        $accountId = $account->getId();
-
         $accountDAO = new \App\DAO\AccountDAO();   
 
-        if ($accountDAO->editAccount($account)) {
-            $newAccountHistory = new \App\Models\AccountHistoryModel();
-            
-            $newAccountHistory->setAccountId($accountId);
-            $newAccountHistory->setOperation($operation);
-            $newAccountHistory->setAmount($amount);
-            $newAccountHistory->setDateTime(date('Y-m-d H:i:s'));
-
-            if (AccountHistoryService::addNewAccountHistory($newAccountHistory)) {
-                return true;
-            }
-            return false;
+        if ($accountDAO->editAccount($accountModel, $accountHistoryModel)) {
+            return true;
         }
         return false;
+    }
+
+    public static function deposit(\stdClass $data, int $accountId)
+    {
+        $amount = $data->amount;
+
+        if ($amount <= 0) {
+            return [
+                'status'  => 409,
+                'message' => "Deposits should be greater than 0."
+            ];
+        }
+
+        $depositOperation = 'deposit';
+        $messageBonusAdded = '';
+        $numberOfDepositsToEarnBonus = 3;
+
+        $accountModel = self::getAccountById($accountId);
+
+        $depositHistory = AccountHistoryService::getAccountHistory($accountId, $depositOperation);
+        $newBalance = $accountModel->getBalance() + $amount;
+        $accountModel->setBalance($newBalance);
+
+        $accountHistoryModel = self::newAccountHistoryModel($accountId, $depositOperation, $amount);
+
+        if ((count($depositHistory) + 1) % $numberOfDepositsToEarnBonus == 0) {
+
+            $bonus = $accountModel->getBonus();
+            $currentBonusBalance = $accountModel->getBonusBalance();
+            $newBonus = $amount * ($bonus / 100);
+            $newBonusBalance = $currentBonusBalance + $newBonus;
+            $accountModel->setBonusBalance($newBonusBalance);
+
+            $messageBonusAdded = 'As this is your third deposit in a row, you received a bonus of ' . $newBonus . ' EUR!';
+        }
+
+        if (self::registerOperation($accountModel, $accountHistoryModel)) {
+            return [
+                'status'  => 201,
+                'message' => "$amount EUR deposited successfully! $messageBonusAdded"
+            ];
+        } else {
+            return [
+                'status'  => 409,
+                'message' => "Error on depositing $amount EUR."
+            ];
+        }
+    }
+
+    public static function withdraw(\stdClass $data, int $accountId): array
+    {
+        $amount = $data->amount;
+
+        if ($amount <= 0) {
+            return [
+                'status'  => 409,
+                'message' => "Withdrawals should be greater than 0."
+            ];
+        }
+
+        $withdrawalOperation = 'withdrawal';
+        $accountModel = AccountService::getAccountById($accountId);
+
+        $currentBalance = $accountModel->getBalance();
+
+        if ($amount <= $currentBalance) {
+            $newBalance = $currentBalance - $amount;
+            $accountModel->setBalance($newBalance);
+
+            $accountHistoryModel = self::newAccountHistoryModel($accountId, $withdrawalOperation, $amount);
+
+            if (self::registerOperation($accountModel, $accountHistoryModel)) {
+                return [
+                    'status'  => 201,
+                    'message' => "$amount EUR withdrawn successfully!"
+                ];
+            } else {
+                return [
+                    'status'  => 409,
+                    'message' => "Error on withdrawing $amount EUR."
+                ];
+            }
+        } else {
+            return [
+                'status'  => 409,
+                'message' => "Your current balance is $currentBalance EUR. It is not possible to withdraw $amount EUR."
+            ];
+        }
+    }
+
+    public static function newAccountHistoryModel(int $accountId, string $operation, float $amount)
+    {
+        $accountHistoryModel = new \App\Models\AccountHistoryModel();
+        $accountHistoryModel->setAccountId($accountId);
+        $accountHistoryModel->setOperation($operation);
+        $accountHistoryModel->setAmount($amount);
+        $accountHistoryModel->setDateTime(date('Y-m-d H:i:s'));
+
+        return $accountHistoryModel;
     }
 
     public static function generateRandomBonus(): float

@@ -2,8 +2,6 @@
 
 namespace App\DAO;
 
-use Error;
-
 class AccountHistoryDAO extends Connection
 {
     public function __construct() {}
@@ -27,12 +25,8 @@ class AccountHistoryDAO extends Connection
 
     public function addNewAccountHistory(\App\Models\AccountHistoryModel $accountHistory)
     {
-        $pdo = self::getPdo();
-
-        $pdo->beginTransaction();
-
         try {
-            $statement = $pdo
+            $statement = self::getPdo()
                 ->prepare('INSERT INTO account_history (account_id, operation, amount, date_time) VALUES (
                     :account_id,
                     :operation,
@@ -46,11 +40,8 @@ class AccountHistoryDAO extends Connection
                 'date_time'  => $accountHistory->getDateTime(),
             ]);
 
-            $pdo->commit();
-
             return true;
-        } catch (Error $e) {
-            $pdo->rollBack();
+        } catch (\PDOException $e) {
             return false;
         }
     }

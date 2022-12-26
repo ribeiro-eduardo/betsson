@@ -2,8 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Services\AccountHistoryService;
-use Exception;
+use App\Services\AccountService;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\ResponseInterface as Response;
 
@@ -32,8 +31,8 @@ final class AccountController
         }
         $accountId = $args['accountId'];
         
-        if (!is_null($data)) {
-            $body->write(json_encode(AccountHistoryService::deposit($data, $accountId)));
+        if (!empty($data)) {
+            $body->write(json_encode(AccountService::deposit($data, $accountId)));
         } else {
             $body->write(json_encode([
                 'status' => 400,
@@ -63,7 +62,7 @@ final class AccountController
         $accountId = $args['accountId'];
         
         if (!is_null($data)) {
-            $body->write(json_encode(AccountHistoryService::withdraw($data, $accountId)));
+            $body->write(json_encode(AccountService::withdraw($data, $accountId)));
         } else {
             $body->write(json_encode([
                 'status' => 400,

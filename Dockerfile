@@ -6,13 +6,10 @@ WORKDIR /var/www/html/betsson/
 RUN  apk update; \
      apk add bash; \
      apk add curl; \
-     curl -s https://getcomposer.org/installer | php; \
-     alias composer='php composer.phar'; \
+     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \	     
      docker-php-ext-install pdo; pdo_mysql; \
      docker-php-ext-install pdo_mysql;  \
      apk add git; 
 
 EXPOSE 8080
-CMD ["php", "-S", "0.0.0.0:8080", "-t", "public/"]
-
 
