@@ -3,6 +3,7 @@ Welcome to Betsson API!
 To run the project, you will need to follow these next steps:
 - Clone the project into your local machine
 - Run docker-compose -d (both database and application containers will be started)
+- Run docker-compose exec api composer install
 
 - There are a few registers already at the database.
 - I have not addressed the ports of db container to host so that one could open the database at DBeaver or MySql Workbench for example, but if you need to see the content of the database, it's possible to run 'docker exec -it betsson-db bash' and inside bash, run 'mysql -uroot -proot'.
