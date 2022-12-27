@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\DAO\AccountDAO;
+
 class AccountService 
 {
     public static function getAccountById(int $accountId): \App\Models\AccountModel
@@ -34,10 +36,7 @@ class AccountService
     {
         $accountDAO = new \App\DAO\AccountDAO();   
 
-        if ($accountDAO->editAccount($accountModel, $accountHistoryModel)) {
-            return true;
-        }
-        return false;
+        return $accountDAO->editAccount($accountModel, $accountHistoryModel);
     }
 
     public static function deposit(\stdClass $data, int $accountId)
@@ -57,28 +56,31 @@ class AccountService
 
         $accountModel = self::getAccountById($accountId);
 
-        $depositHistory = AccountHistoryService::getAccountHistory($accountId, $depositOperation);
         $newBalance = $accountModel->getBalance() + $amount;
-        $accountModel->setBalance($newBalance);
 
         $accountHistoryModel = self::newAccountHistoryModel($accountId, $depositOperation, $amount);
 
-        if ((count($depositHistory) + 1) % $numberOfDepositsToEarnBonus == 0) {
+        sleep(rand(2, 5)); // simulating slow connection
+        
+        $returnRegisterOperation = self::registerOperation($accountModel, $accountHistoryModel);
 
-            $bonus = $accountModel->getBonus();
-            $currentBonusBalance = $accountModel->getBonusBalance();
-            $newBonus = $amount * ($bonus / 100);
-            $newBonusBalance = $currentBonusBalance + $newBonus;
-            $accountModel->setBonusBalance($newBonusBalance);
+        ErrorLogService::log('returnRegisterOperation: ' . json_encode($returnRegisterOperation));
 
-            $messageBonusAdded = 'As this is your third deposit in a row, you received a bonus of ' . $newBonus . ' EUR!';
-        }
-
-        if (self::registerOperation($accountModel, $accountHistoryModel)) {
-            return [
-                'status'  => 201,
-                'message' => "$amount EUR deposited successfully! $messageBonusAdded"
-            ];
+        if ($returnRegisterOperation['status']) {
+            
+            if ($returnRegisterOperation['thirdDeposit']) {
+                $newBonus = $returnRegisterOperation['newBonus'];
+                $messageBonusAdded = 'As this is your third deposit in a row, you received a bonus of ' . $newBonus . ' EUR!';
+                return [
+                    'status'  => 201,
+                    'message' => "$amount EUR deposited successfully! $messageBonusAdded"
+                ];
+            } else {
+                return [
+                    'status'  => 201,
+                    'message' => "$amount EUR deposited successfully!"
+                ];
+            }
         } else {
             return [
                 'status'  => 409,
@@ -137,6 +139,27 @@ class AccountService
         $accountHistoryModel->setDateTime(date('Y-m-d H:i:s'));
 
         return $accountHistoryModel;
+    }
+
+
+    public static function manageBalance(int $accountId, float $amount)
+    {
+        $accountModel = self::getAccountById($accountId);
+        ErrorLogService::log('before calling dao, model: ' . json_encode($accountModel->toArray()));
+        $accountModel->setBalance($accountModel->getBalance() + $amount);
+        AccountDAO::manageBalance($accountModel);
+    }
+
+    public static function manageBonus(\App\Models\AccountModel $accountModel, float $amount)
+    {
+        $bonus = $accountModel->getBonus();
+        $currentBonusBalance = $accountModel->getBonusBalance();
+        $newBonus = $amount * ($bonus / 100);
+        $newBonusBalance = $currentBonusBalance + $newBonus;
+        
+        $accountModel->setBonusBalance($newBonusBalance);
+
+        AccountDAO::manageBonus($accountModel);
     }
 
     public static function generateRandomBonus(): float

@@ -2,6 +2,8 @@
 
 namespace App\DAO;
 
+use App\Services\ErrorLogService;
+
 class AccountHistoryDAO extends Connection
 {
     public function __construct() {}
@@ -42,6 +44,7 @@ class AccountHistoryDAO extends Connection
 
             return true;
         } catch (\PDOException $e) {
+            ErrorLogService::log($e->getMessage());
             return false;
         }
     }

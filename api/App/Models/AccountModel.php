@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\AccountHistoryService;
+use App\Services\AccountService;
 
 final class AccountModel
 {
@@ -65,6 +66,30 @@ final class AccountModel
     public function registerOperation(\App\Models\AccountHistoryModel $accountHistoryModel)
     {   
         AccountHistoryService::registerOperation($accountHistoryModel);
+    }
+
+    public function depositsHistory()
+    {
+        $operation = 'deposit';
+        return AccountHistoryService::getAccountHistory($this->getId(), $operation);
+    }
+
+    public function manageBalance(float $amount)
+    {
+        AccountService::manageBalance($this->getId(), $amount);
+    }
+
+    public function checkThirdDeposit(float $amount)
+    {  
+        $numberOfDepositsToEarnBonus = 3;
+        $countDeposits = count($this->depositsHistory());
+
+        if ($countDeposits > 0 && (count($this->depositsHistory()) % $numberOfDepositsToEarnBonus == 0)) {
+            AccountService::manageBonus($this, $amount);
+            return true;
+        }
+
+        return false;
     }
 
     public function toArray(): array
