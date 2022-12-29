@@ -74,11 +74,6 @@ final class AccountModel
         return AccountHistoryService::getAccountHistory($this->getId(), $operation);
     }
 
-    public function manageBalance(float $amount)
-    {
-        AccountService::manageBalance($this->getId(), $amount);
-    }
-
     public function checkThirdDeposit(float $amount)
     {  
         $numberOfDepositsToEarnBonus = 3;

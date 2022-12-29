@@ -56,13 +56,21 @@ class AccountDAO extends Connection
         $amount = $accountHistoryModel->getAmount();
 
         try {
+            $statement = $pdo->query('SELECT * FROM account WHERE id = ' . $account->getId() .' FOR UPDATE');
+
+            if ($accountHistoryModel->getOperation() == 'deposit') {
+                $balanceToBeUpdated = 'balance + :amount';
+            } else {
+                $balanceToBeUpdated = 'balance - :amount';
+            }
             $statement = $pdo
-                ->prepare('
-                    UPDATE account SET
-                        bonus_balance = :bonus_balance
-                    WHERE id = :id;');
+                ->prepare('UPDATE account SET
+                            balance = '. $balanceToBeUpdated .',
+                            bonus_balance = :bonus_balance
+                           WHERE id = :id;');
       
             $statement->execute([
+                'amount'        => $accountHistoryModel->getAmount(),
                 'bonus_balance' => $account->getBonusBalance(),
                 'id'            => $account->getId()
             ]);
@@ -70,12 +78,9 @@ class AccountDAO extends Connection
             
             $account->registerOperation($accountHistoryModel);
 
-            
             $pdo->commit();
-            
-            $account->manageBalance($amount);
 
-            if ($account->checkThirdDeposit($amount)) {
+            if ($accountHistoryModel->getOperation() == 'deposit' && $account->checkThirdDeposit($amount)) {
                 $newBonus = $amount * ($account->getBonus() / 100);
                 $editAccountReturn = [
                     'status' => true,
@@ -87,38 +92,13 @@ class AccountDAO extends Connection
                     'status' => true,
                     'thirdDeposit' => false
                 ];
-            }
+            }    
 
             return $editAccountReturn;
 
         } catch (\PDOException $e) {
             ErrorLogService::log($e->getMessage());
             $pdo->rollBack();
-            return false;
-        }
-    }
-
-    public static function manageBalance(\App\Models\AccountModel $account)
-    {
-        ErrorLogService::log('model: ' . json_encode($account->toArray()));
-        $pdo = self::getPdo();
-        $pdo->beginTransaction();
-
-        try {
-            $statement = $pdo
-                ->prepare('UPDATE account SET
-                        balance = :balance
-                    WHERE id = :id;
-                ');
-          
-            $statement->execute([
-                'balance' => $account->getBalance(),
-                'id'      => $account->getId()
-            ]);
-            
-            $pdo->commit();
-        } catch (\PDOException $e) {
-            ErrorLogService::log($e->getMessage());
             return false;
         }
     }
