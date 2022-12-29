@@ -58,6 +58,8 @@ class AccountService
 
         $newBalance = $accountModel->getBalance() + $amount;
 
+        $accountModel->setBalance($newBalance);
+
         $accountHistoryModel = self::newAccountHistoryModel($accountId, $depositOperation, $amount);
 
         sleep(rand(2, 5)); // simulating slow connection
@@ -139,15 +141,6 @@ class AccountService
         $accountHistoryModel->setDateTime(date('Y-m-d H:i:s'));
 
         return $accountHistoryModel;
-    }
-
-
-    public static function manageBalance(int $accountId, float $amount)
-    {
-        $accountModel = self::getAccountById($accountId);
-        ErrorLogService::log('before calling dao, model: ' . json_encode($accountModel->toArray()));
-        $accountModel->setBalance($accountModel->getBalance() + $amount);
-        AccountDAO::manageBalance($accountModel);
     }
 
     public static function manageBonus(\App\Models\AccountModel $accountModel, float $amount)
