@@ -2,6 +2,7 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use Slim\Factory\AppFactory;
+use Slim\Exception\HttpNotFoundException;
 
 $app = AppFactory::create();
 
@@ -27,4 +28,22 @@ $app->put('/withdrawal/', App\Controllers\NotFoundController::class . ':throwNot
 $app->get('/operations_report[/{interval}]', App\Controllers\AccountHistoryController::class . ':getOperationsReport');
 $app->get('/operations_report/', App\Controllers\NotFoundController::class . ':throwNotFoundRoute');
 
+$app->options('/{routes:.+}', function ($request, $response, $args) {
+    return $response;
+});
+
+$app->add(function ($request, $handler) {
+    $response = $handler->handle($request);
+    return $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+});
+
+$app->get('/next_races', App\Controllers\RaceController::class . ':getNextRaces');
+
+
+$app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function ($request, $response) {
+    throw new HttpNotFoundException($request);
+});
 $app->run();
